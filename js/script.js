@@ -1,6 +1,7 @@
 function loadData() {
 
     var $body = $('body');
+    var $wikiHeaderElem = $('#wikipedia-header');
     var $wikiElem = $('#wikipedia-links');
     var $nytHeaderElem = $('#nytimes-header');
     var $nytElem = $('#nytimes-articles');
@@ -31,7 +32,31 @@ function loadData() {
             $nytElem.append('<li class="article">' + '<a href="' + article.web_url + '"> ' + article.headline.main + '</a>' + '<p>' + article.snippet + '</p>' + '</li>');
         };
     }).error(function() {
-      $nytHeaderElem.text("New York Times Articles could not be loaded");
+        $nytHeaderElem.text("New York Times Articles could not be loaded");
+    });
+    // Wikipedia API
+    var wikiUrl = "https://en.wikipedia.org/w/api.php?action=opensearch&search=" + city + "&format=json&callback=wikiCallback";
+    var wikiRequestTimeout = setTimeout(function(){
+      $wikiElem.text("failed to get wikipedia resources");
+    }, 8000);
+    $.ajax({
+        url: wikiUrl,
+        dataType: "jsonp",
+        success: function(response) {
+            $wikiHeaderElem.text('Wiki article about ' + city);
+            var articles = response[1];
+            for (var i = 0; i < articles.length; i++) {
+                var article = articles[i];
+                var url = 'http://en.wikipedia.org/wiki/' + article;
+                $wikiElem.append('<li><a href="' + url + '">' +
+                    article + '</a></li>');
+            };
+
+            clearTimeout(wikiRequestTimeout);
+        },
+        error: function(e) {
+            $wikiHeaderElem.text('Cannot get article');
+        }
     });
 
     return false;
