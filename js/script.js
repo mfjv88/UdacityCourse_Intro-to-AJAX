@@ -1,4 +1,3 @@
-
 function loadData() {
 
     var $body = $('body');
@@ -12,16 +11,30 @@ function loadData() {
     $nytElem.text("");
 
     // load streetview
-    $(".bgimg").append("<img class='bgimg' src='https://maps.googleapis.com/maps/api/streetview?size=600x300&location=" + street + ", " + city + "' alt='streetview' />");
-    // YOUR CODE GOES HERE!
+    var street = $("#street").val();
+    var city = $("#city").val();
+    var address = street + ', ' + city;
+
+    $greeting.text('So, you want to live at ' + address + '?');
+
+    var streetviewUrl = 'https://maps.googleapis.com/maps/api/streetview?size=600x400&location=' + address + '';
+    $body.append("<img class='bgimg' src='" + streetviewUrl + "'>");
+    // YOUR CODE GOES HERE
+    var nytimesUrl = "http://api.nytimes.com/svc/search/v2/articlesearch.json?q=" + address + "&sort=newest&api-key=a16e048e335445438f1c435668ebcd4d"
+    $.getJSON(nytimesUrl, function(data) {
+        console.log(data);
+        $nytHeaderElem.text("New York Times Articles about " + address + "!");
+
+        articles = data.response.docs;
+        for (var i = 0; i < articles.length; i++) {
+            var article = articles[i];
+            $nytElem.append('<li class="article">' + '<a href="' + article.web_url + '"> ' + article.headline.main + '</a>' + '<p>' + article.snippet + '</p>' + '</li>');
+        };
+    }).error(function() {
+      $nytHeaderElem.text("New York Times Articles could not be loaded");
+    });
 
     return false;
 };
 
 $('#form-container').submit(loadData);
-
-var input = $( "button" ).click(function() {
-  var street = $("#street").text();
-  var city = $("#city").text();
-  $(".bgimg").val(city, street);
-});
